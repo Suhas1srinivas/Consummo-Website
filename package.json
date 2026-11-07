@@ -1,7 +1,7 @@
 {
   "name": "consummo-website",
   "version": "1.0.0",
-  "description": "Consummo - Always-On Intelligence for Supply Chain Planning",
+  "description": "Consummo website: demand, supply, inventory and pricing intelligence for FMCG brands and retailers",
   "main": "index.html",
   "scripts": {
     "start": "npx serve -l 3001 .",
