@@ -8,7 +8,7 @@
     '.metrics__grid > li', '.why-card', '.pencil-card', '.mediaf__media',
     '.cgrid__item', '.ans__card', '.psol__card', '.bfor__card', '.cmp__row', '.faq__item',
     '.sgrid__card', '.srflow__col', '.srflow__reach', '.factors-diagram-container',
-    '.ovx__panel', '.bzs', '.bzp__item', '.bzt__card', '.bzf__step', '.bzf__loop',
+    '.ovx__panel', '.bzs', '.bzg', '.bzx__card','.bzp__item', '.bzt__card', '.bzf__step', '.bzf__loop',
     '.bzd', '.dx', '.dk', '.hb-sector', '.hb-card', '.hb-big__card', '.hb-legal > li',
     '.cp-mv__card', '.cp-who__card', '.cp-nova', '.cp-flow > li', '.cp-docs', '.cp-faq details',
     '.lg__toc', '.lg__sec', '.footer__col', '.footer__band > *'
