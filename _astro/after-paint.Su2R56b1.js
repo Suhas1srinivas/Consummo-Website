@@ -1,0 +1,1 @@
+var e=(e,t=6e3)=>{if(!PerformanceObserver.supportedEntryTypes.includes(`paint`)){e();return}let n=!1,r=()=>{n||(n=!0,e())},i=new PerformanceObserver(()=>{i.disconnect(),r()});i.observe({type:`paint`,buffered:!0}),window.setTimeout(r,t)};export{e as t};

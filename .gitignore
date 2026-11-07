@@ -1,0 +1,13 @@
+# Local backups
+*.bak_*
+*.bak
+
+# Dependencies and OS files
+node_modules/
+.DS_Store
+Thumbs.db
+
+# Old asset backups and local build/debug scripts
+*.old_bak
+tools/
+__pycache__/
