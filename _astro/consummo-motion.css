@@ -95,3 +95,18 @@ header.nav .nav__brand .nav__logo{height:2.75rem}
   .perlin.perlin::before{animation:none}
   .btn:hover,.cgrid__feature-card:hover,.why-card:hover,.ans__card:hover,.metric-card:hover,.bzp__item:hover,.bzf__step:hover,.sgrid__card:hover{transform:none}
 }
+
+/* ===== Compact header + desktop scale (site shown at the size of 80% browser zoom) ===== */
+header.nav:not([data-scrolled=true]){padding:.6rem 2rem !important}
+header.nav:not([data-scrolled=true]) .nav__inner{min-height:4.25rem !important;margin-top:.25rem !important;padding:.35rem 1.5rem !important}
+header.nav .nav__brand .nav__logo{height:2.2rem}
+header.nav .nav__list{padding:.25rem}
+header.nav .nav__link{padding:.5rem 1.05rem;font-size:.9rem}
+header.nav .nav__cta--bar{padding:.7rem 1.35rem;font-size:.9rem}
+@media (min-width:1100px){
+  html{zoom:.8}
+  /* zoom also shrinks screen-height units, so scale them back up to fill the screen */
+  [data-card-scroller].is-carousel{--cs-win:clamp(calc(var(--cs-card-h,34rem) + var(--cs-room)), calc(125vh - 8rem), calc(var(--cs-card-h,34rem) + var(--cs-room) + 16rem)) !important}
+  [data-card-scroller].is-carousel [data-cs-viewport]{min-height:min(calc(125vh - 8rem), calc(var(--cs-win,34rem) + 4rem)) !important}
+  .cstud__card{height:clamp(600px,106vh,860px) !important}
+}
