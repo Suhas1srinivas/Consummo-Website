@@ -111,6 +111,53 @@
   window.addEventListener('scroll', onScroll, { passive: true });
   window.addEventListener('resize', onScroll, { passive: true });
 
+  // ---- Phones: show each business dashboard as one connected laptop-style view ----
+  // The dashboards are built phone-first and only switch to their laptop layout at wide
+  // screen widths. On phones we re-apply each dashboard's own wide-screen rules, lay it out
+  // at a laptop width, then scale the whole frame down to fit the screen.
+  var DASH = '.bzd, .dx, .dk';
+  var DASH_RULE = /\.(bzd|dx|dk|nova)[\w-]*/;
+  var DASH_W = 1200;
+  var PHONE = '(max-width: 767.98px)';
+  function buildDashCss() {
+    if (document.getElementById('cm-dash-fit') || !document.querySelector(DASH)) return;
+    var out = [];
+    Array.prototype.forEach.call(document.styleSheets, function (sheet) {
+      var rules; try { rules = sheet.cssRules; } catch (e) { return; }
+      Array.prototype.forEach.call(rules || [], function (r) {
+        if (!r.media || !r.cssRules) return;
+        var c = r.conditionText || r.media.mediaText || '';
+        // only rules that are active on a wide laptop screen
+        if (!/min-width|>=?/.test(c) || /max-width|</.test(c)) return;
+        Array.prototype.forEach.call(r.cssRules, function (inner) {
+          if (inner.selectorText && DASH_RULE.test(inner.selectorText)) out.push(inner.cssText);
+        });
+      });
+    });
+    var st = document.createElement('style'); st.id = 'cm-dash-fit';
+    st.textContent = '@media ' + PHONE + '{' + out.join('\n') + '\n.cm-dash-fit{max-width:none!important;margin-left:0!important;margin-right:0!important}}';
+    // after every page style, so these win over the dashboards' own phone rules
+    document.body.appendChild(st);
+  }
+  function fitDash() {
+    var roots = Array.prototype.filter.call(document.querySelectorAll(DASH), function (el) { return !(el.parentElement && el.parentElement.closest(DASH)); });
+    if (!roots.length) return;
+    var phone = window.matchMedia(PHONE).matches;
+    if (phone) buildDashCss();
+    roots.forEach(function (el) {
+      if (!phone) { el.classList.remove('cm-dash-fit'); el.style.removeProperty('zoom'); el.style.removeProperty('width'); return; }
+      var p = el.parentElement, cs = getComputedStyle(p);
+      var avail = p.clientWidth - parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight);
+      el.classList.add('cm-dash-fit');
+      el.style.width = DASH_W + 'px';
+      el.style.zoom = Math.min(1, avail / DASH_W).toFixed(4);
+    });
+  }
+  var dashT = 0;
+  window.addEventListener('resize', function () { clearTimeout(dashT); dashT = setTimeout(fitDash, 120); }, { passive: true });
+  document.addEventListener('astro:page-load', fitDash);
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', fitDash); else fitDash();
+
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init); else init();
   document.addEventListener('astro:page-load', function () { if (document.body && !document.body.__cmInit) { document.body.__cmInit = true; init(); } });
   document.addEventListener('astro:after-swap', function () { document.body.__cmInit = false; });
