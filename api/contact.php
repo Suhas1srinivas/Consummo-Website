@@ -23,6 +23,7 @@ if (!is_file($configFile)) {
     respond(false, 'The contact form is not configured yet. Please message us on WhatsApp.', 503);
 }
 $cfg = require $configFile;
+date_default_timezone_set((string) ($cfg['timezone'] ?? 'Asia/Kolkata'));
 
 if (($_SERVER['REQUEST_METHOD'] ?? '') !== 'POST') {
     header('Allow: POST');
@@ -33,7 +34,7 @@ if ((int) ($_SERVER['CONTENT_LENGTH'] ?? 0) > MAX_BODY_BYTES) {
 }
 
 // ---------- Same-site check: only accept posts from pages on this website ----------
-$host = strtolower((string) ($_SERVER['HTTP_HOST'] ?? ''));
+$host = strtolower((string) preg_replace('/:\d+$/', '', (string) ($_SERVER['HTTP_HOST'] ?? '')));
 $allowedHosts = array_map('strtolower', array_merge([$host], (array) ($cfg['allowed_hosts'] ?? [])));
 $origin = (string) ($_SERVER['HTTP_ORIGIN'] ?? '');
 $referer = (string) ($_SERVER['HTTP_REFERER'] ?? '');
@@ -189,6 +190,7 @@ $isNew = !is_file($csv);
 if ($fh = @fopen($csv, 'ab')) {
     flock($fh, LOCK_EX);
     if ($isNew) {
+        fwrite($fh, "\xEF\xBB\xBF"); // UTF-8 marker so Excel shows the rupee sign and other characters correctly
         fputcsv($fh, ['received', 'type', 'name', 'email', 'company', 'role', 'phone', 'whatsapp_ok', 'business', 'revenue',
             'interested_in', 'topic', 'message', 'page']);
     }
