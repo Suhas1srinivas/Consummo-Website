@@ -1,6 +1,6 @@
 <?php
 /**
- * Consummo contact and demo form handler.
+ * Conzmo contact and demo form handler.
  *
  * Receives the Contact Us and Book a Demo forms, checks them, blocks spam and
  * abuse, emails the lead to the team, sends the visitor a confirmation and keeps
@@ -39,7 +39,7 @@ $origin = (string) ($_SERVER['HTTP_ORIGIN'] ?? '');
 $referer = (string) ($_SERVER['HTTP_REFERER'] ?? '');
 $sourceHost = strtolower((string) (parse_url($origin !== '' ? $origin : $referer, PHP_URL_HOST) ?? ''));
 if ($sourceHost === '' || !in_array($sourceHost, $allowedHosts, true)) {
-    respond(false, 'This form can only be sent from the Consummo website.', 403);
+    respond(false, 'This form can only be sent from the Conzmo website.', 403);
 }
 
 // ---------- Read and clean input ----------
@@ -242,15 +242,15 @@ $sent = sendMail($cfg, (string) $cfg['to_email'], $subject, $html, $text, $email
 // ---------- Confirmation to the visitor (limited per address, so the form cannot be used to spam people) ----------
 if ($sent && $allowConfirm && !empty($cfg['send_confirmation'])) {
     $first = explode(' ', $name)[0];
-    $cSubject = $type === 'demo' ? 'Your Consummo demo request' : 'We received your message';
+    $cSubject = $type === 'demo' ? 'Your Conzmo demo request' : 'We received your message';
     $cBody = $type === 'demo'
         ? 'Thanks for booking a demo. We will reply within one business day to confirm a time that suits you.'
         : 'Thanks for getting in touch. We will reply within one business day.';
     $cHtml = '<div style="font-family:Arial,Helvetica,sans-serif;max-width:560px;margin:auto;color:#1e293b">'
         . '<p>Hi ' . $e($first) . ',</p><p>' . $e($cBody) . '</p>'
         . (!empty($cfg['whatsapp_link']) ? '<p>Want to talk sooner? <a href="' . $e((string) $cfg['whatsapp_link']) . '">Message us on WhatsApp</a>.</p>' : '')
-        . '<p>The Consummo team<br><a href="https://www.conzmo.com">conzmo.com</a></p></div>';
-    sendMail($cfg, $email, $cSubject, $cHtml, strip_tags(str_replace(['<br>', '</p>'], ["\n", "\n\n"], $cHtml)), (string) ($cfg['reply_to'] ?? ''), 'Consummo');
+        . '<p>The Conzmo team<br><a href="https://www.conzmo.com">conzmo.com</a></p></div>';
+    sendMail($cfg, $email, $cSubject, $cHtml, strip_tags(str_replace(['<br>', '</p>'], ["\n", "\n\n"], $cHtml)), (string) ($cfg['reply_to'] ?? ''), 'Conzmo');
 }
 
 if (!$sent) {
@@ -291,7 +291,7 @@ function sendMail(array $cfg, string $to, string $subject, string $html, string 
         return false;
     }
     $from = (string) $cfg['from_email'];
-    $fromName = (string) ($cfg['from_name'] ?? 'Consummo');
+    $fromName = (string) ($cfg['from_name'] ?? 'Conzmo');
     $boundary = 'b' . bin2hex(random_bytes(12));
     $headers = [
         'From: ' . encodeHeader($fromName) . ' <' . $from . '>',

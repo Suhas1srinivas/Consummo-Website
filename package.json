@@ -1,7 +1,7 @@
 {
   "name": "consummo-website",
   "version": "1.0.0",
-  "description": "Consummo website: demand, supply, inventory and pricing intelligence for FMCG brands and retailers",
+  "description": "Conzmo website: demand, supply, inventory and pricing intelligence for FMCG brands and retailers",
   "main": "index.html",
   "scripts": {
     "start": "npx serve -l 3001 .",
@@ -11,11 +11,11 @@
     "supply-chain",
     "planning",
     "ai",
-    "consummo",
+    "conzmo",
     "probabilistic-forecasting",
     "decision-intelligence"
   ],
-  "author": "Consummo",
+  "author": "Conzmo",
   "license": "ISC"
 }
 

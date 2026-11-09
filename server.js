@@ -144,6 +144,6 @@ const server = http.createServer((req, res) => {
 });
 
 server.listen(PORT, '0.0.0.0', () => {
-  console.log(`Consummo website running at http://localhost:${PORT}`);
+  console.log(`Conzmo website running at http://localhost:${PORT}`);
 });
 

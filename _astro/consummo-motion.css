@@ -1,4 +1,4 @@
-/* Consummo motion layer: scroll reveals, counters, progress and UX polish. Theme unchanged. */
+/* Conzmo motion layer: scroll reveals, counters, progress and UX polish. Theme unchanged. */
 html{scroll-behavior:smooth}
 :target,section[id]{scroll-margin-top:7rem}
 

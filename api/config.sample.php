@@ -1,6 +1,6 @@
 <?php
 /**
- * Consummo form settings: TEMPLATE.
+ * Conzmo form settings: TEMPLATE.
  *
  * On the server: copy this file to config.php in the same folder and fill it in.
  * config.php is excluded from Git, so passwords never reach GitHub.
@@ -11,7 +11,7 @@ return [
 
     // Sender. Must be a mailbox that exists on your domain (create it in Hostinger hPanel > Emails)
     'from_email' => 'no-reply@conzmo.com',
-    'from_name'  => 'Consummo Website',
+    'from_name'  => 'Conzmo Website',
 
     // Send the visitor a "we received your request" email (max 2 per address per day)
     'send_confirmation' => true,

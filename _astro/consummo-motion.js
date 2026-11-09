@@ -1,4 +1,4 @@
-/* Consummo motion layer */
+/* Conzmo motion layer */
 (function () {
   if (window.__cmMotion) return; window.__cmMotion = true;
   var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
