@@ -86,7 +86,7 @@ $BUSINESSES = [
     'home-lifestyle' => 'Home & Lifestyle', 'convenience-discount-retail' => 'Convenience & Discount Retail',
     'wholesale-cash-carry' => 'Wholesale & Cash-and-Carry', 'ecommerce-quick-commerce' => 'E-commerce & Quick Commerce', 'other' => 'Other',
 ];
-$MODULES = ['Demand Pulse', 'Supply Rhythm', 'Inventory Harmony', 'Price Tempo', 'Nova assistant'];
+$MODULES = ['Demand Pulse', 'Supply Rhythm', 'Inventory Harmony', 'P&P Tempo', 'Price Tempo', 'Nova assistant'];
 $TOPICS = ['Sales and pricing', 'Partnerships', 'Customer support', 'Careers', 'Media', 'Something else'];
 
 $type     = field('form_type', 20) === 'demo' ? 'demo' : 'contact';

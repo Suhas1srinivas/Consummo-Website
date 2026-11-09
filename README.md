@@ -23,7 +23,7 @@ python -m http.server 3001
 | Area | Pages |
 | --- | --- |
 | Home | Hero, platform showcase, Meet Nova, industry expertise, why Conzmo |
-| Solutions | Demand Pulse, Supply Rhythm, Inventory Harmony, Price Tempo, plus supporting solution pages |
+| Solutions | Demand Pulse, Supply Rhythm, Inventory Harmony, P&P Tempo, plus supporting solution pages |
 | Industries | FMCG Brand and Retail hubs, with 16 business pages (6 FMCG categories, 10 retail formats) |
 | Company | Company hub, About Conzmo, Trust and Security |
 | Legal | Privacy Policy, Terms of Use, Cookie Declaration |
