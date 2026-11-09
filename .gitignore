@@ -7,6 +7,11 @@ node_modules/
 .DS_Store
 Thumbs.db
 
+# Form settings and lead data (server only, never in Git)
+api/config.php
+api/data/*
+!api/data/.htaccess
+
 # Old asset backups and local build/debug scripts
 *.old_bak
 tools/
