@@ -100,6 +100,10 @@ header.nav .nav__brand .nav__logo{height:2.75rem}
 /* Mega menu featured card: icon sits beside the title, not above it */
 .mega__featured .mega__featured-head{flex-direction:row !important;align-items:center !important;gap:.6rem !important}
 .mega__featured .mega__featured-icon{flex:none;width:1.4rem !important;height:1.4rem !important;margin:0 !important}
+.mega__featured .mega__featured-desc{text-wrap:balance;max-width:34rem}
+.mega__featured .mega__trust{list-style:none;margin:.25rem 0 0;padding:0;display:flex;flex-wrap:wrap;gap:.5rem .6rem}
+.mega__featured .mega__trust li{display:inline-flex;align-items:center;gap:.4rem;padding:.35rem .7rem .35rem .45rem;border-radius:999px;font-size:.78rem;font-weight:600;color:#fff;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.18)}
+.mega__featured .mega__trust li::before{content:"";flex:none;width:1rem;height:1rem;border-radius:50%;background:#10c7a2 url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='3.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M20 6 9 17l-5-5'/%3E%3C/svg%3E") center/.65rem no-repeat}
 /* every part of the floating-bar -> full-bar change animates together, so scrolling feels smooth */
 header.nav{transition:background-color .5s ease,border-color .5s ease,box-shadow .5s ease,padding .5s cubic-bezier(.22,1,.36,1) !important}
 header.nav .nav__inner{border:1px solid transparent;transition:min-height .5s cubic-bezier(.22,1,.36,1),margin .5s cubic-bezier(.22,1,.36,1),padding .5s cubic-bezier(.22,1,.36,1),background-color .5s ease,border-color .5s ease,border-radius .5s ease,box-shadow .5s ease !important}
