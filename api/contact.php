@@ -18,11 +18,30 @@ header('X-Robots-Tag: noindex');
 
 const MAX_BODY_BYTES = 32768;
 
+// Built-in settings, so the form works straight from a Git deploy. Nothing secret lives here.
+// An optional api/config.php on the server overrides any of these (for example to add the
+// SMTP mailbox password, which gives better delivery than PHP mail()).
+$defaults = [
+    'to_email'            => 'suhas.conzmo@gmail.com',
+    'from_email'          => 'no-reply@conzmo.com',
+    'from_name'           => 'Conzmo Website',
+    'send_confirmation'   => true,
+    'reply_to'            => 'suhas.conzmo@gmail.com',
+    'whatsapp_link'       => 'https://wa.me/919108741367',
+    'rate_limit_per_hour' => 5,
+    'daily_cap'           => 150,
+    'allowed_hosts'       => ['conzmo.com', 'www.conzmo.com'],
+    'trust_cloudflare'    => false,
+    'smtp'                => ['host' => 'smtp.hostinger.com', 'port' => 465, 'username' => 'no-reply@conzmo.com', 'password' => ''],
+];
 $configFile = __DIR__ . '/config.php';
-if (!is_file($configFile)) {
-    respond(false, 'The contact form is not configured yet. Please message us on WhatsApp.', 503);
+$cfg = $defaults;
+if (is_file($configFile)) {
+    $local = require $configFile;
+    if (is_array($local)) {
+        $cfg = array_replace($defaults, $local);
+    }
 }
-$cfg = require $configFile;
 date_default_timezone_set((string) ($cfg['timezone'] ?? 'Asia/Kolkata'));
 
 if (($_SERVER['REQUEST_METHOD'] ?? '') !== 'POST') {
