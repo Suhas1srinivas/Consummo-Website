@@ -97,6 +97,9 @@ header.nav .nav__brand .nav__logo{height:2.75rem}
 }
 
 /* ===== Compact header + desktop scale (site shown at the size of 80% browser zoom) ===== */
+/* Mega menu featured card: icon sits beside the title, not above it */
+.mega__featured .mega__featured-head{flex-direction:row !important;align-items:center !important;gap:.6rem !important}
+.mega__featured .mega__featured-icon{flex:none;width:1.4rem !important;height:1.4rem !important;margin:0 !important}
 /* every part of the floating-bar -> full-bar change animates together, so scrolling feels smooth */
 header.nav{transition:background-color .5s ease,border-color .5s ease,box-shadow .5s ease,padding .5s cubic-bezier(.22,1,.36,1) !important}
 header.nav .nav__inner{border:1px solid transparent;transition:min-height .5s cubic-bezier(.22,1,.36,1),margin .5s cubic-bezier(.22,1,.36,1),padding .5s cubic-bezier(.22,1,.36,1),background-color .5s ease,border-color .5s ease,border-radius .5s ease,box-shadow .5s ease !important}
