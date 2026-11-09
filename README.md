@@ -52,7 +52,7 @@ server.js             Small static server (port 3001)
 
 ## Security
 
-* **`.htaccess`** (Hostinger): forces HTTPS, redirects `consummo.com` to `www`, sends security headers (HSTS, Content Security Policy, X-Frame-Options, Referrer-Policy, Permissions-Policy), blocks hidden and private files (`.git`, `README.md`, `server.js`, `api/config.php`, lead files) and serves `404.html`.
+* **`.htaccess`** (Hostinger): forces HTTPS, redirects `conzmo.com` to `www`, sends security headers (HSTS, Content Security Policy, X-Frame-Options, Referrer-Policy, Permissions-Policy), blocks hidden and private files (`.git`, `README.md`, `server.js`, `api/config.php`, lead files) and serves `404.html`.
 * **Forms** (`api/contact.php`): same-site check, request size limit, honeypot and timing check, per-visitor and daily limits, confirmation emails capped per address, allow-listed values, spreadsheet-safe lead files, no PHP errors shown to visitors.
 * **Secrets** live only in `api/config.php` on the server, which is excluded from Git. Never commit passwords or keys.
 * `server.js` sends the same headers locally, so policy problems show up before deployment.

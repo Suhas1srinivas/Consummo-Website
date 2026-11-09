@@ -10,12 +10,12 @@ return [
     'to_email' => 'your-inbox@example.com',
 
     // Sender. Must be a mailbox that exists on your domain (create it in Hostinger hPanel > Emails)
-    'from_email' => 'no-reply@consummo.com',
+    'from_email' => 'no-reply@conzmo.com',
     'from_name'  => 'Consummo Website',
 
     // Send the visitor a "we received your request" email (max 2 per address per day)
     'send_confirmation' => true,
-    'reply_to' => 'hello@consummo.com',
+    'reply_to' => 'hello@conzmo.com',
     'whatsapp_link' => 'https://wa.me/910000000000',
 
     // Abuse limits
@@ -26,7 +26,7 @@ return [
     // 'data_dir' => '/home/u123456789/consummo-data',
 
     // Extra site addresses allowed to post the form (the current domain is always allowed)
-    'allowed_hosts' => ['consummo.com', 'www.consummo.com'],
+    'allowed_hosts' => ['conzmo.com', 'www.conzmo.com'],
 
     // Set to true only if the site sits behind Cloudflare
     'trust_cloudflare' => false,
@@ -36,7 +36,7 @@ return [
     'smtp' => [
         'host'     => 'smtp.hostinger.com',
         'port'     => 465,
-        'username' => 'no-reply@consummo.com',
+        'username' => 'no-reply@conzmo.com',
         'password' => '',
     ],
 ];

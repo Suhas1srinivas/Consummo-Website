@@ -249,7 +249,7 @@ if ($sent && $allowConfirm && !empty($cfg['send_confirmation'])) {
     $cHtml = '<div style="font-family:Arial,Helvetica,sans-serif;max-width:560px;margin:auto;color:#1e293b">'
         . '<p>Hi ' . $e($first) . ',</p><p>' . $e($cBody) . '</p>'
         . (!empty($cfg['whatsapp_link']) ? '<p>Want to talk sooner? <a href="' . $e((string) $cfg['whatsapp_link']) . '">Message us on WhatsApp</a>.</p>' : '')
-        . '<p>The Consummo team<br><a href="https://www.consummo.com">consummo.com</a></p></div>';
+        . '<p>The Consummo team<br><a href="https://www.conzmo.com">conzmo.com</a></p></div>';
     sendMail($cfg, $email, $cSubject, $cHtml, strip_tags(str_replace(['<br>', '</p>'], ["\n", "\n\n"], $cHtml)), (string) ($cfg['reply_to'] ?? ''), 'Consummo');
 }
 
