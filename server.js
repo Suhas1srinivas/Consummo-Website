@@ -50,11 +50,27 @@ function handleContactLocally(req, res) {
   });
 }
 
+// Same security headers as .htaccess on Hostinger, so problems show up locally too.
+const SECURITY_HEADERS = {
+  'X-Content-Type-Options': 'nosniff',
+  'X-Frame-Options': 'SAMEORIGIN',
+  'Referrer-Policy': 'strict-origin-when-cross-origin',
+  'Permissions-Policy': 'camera=(), microphone=(), geolocation=(), payment=(), usb=()',
+  'Cross-Origin-Opener-Policy': 'same-origin',
+  'Content-Security-Policy': "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self' data:; media-src 'self' blob:; connect-src 'self'; frame-src 'none'; frame-ancestors 'self'; form-action 'self'; base-uri 'self'; object-src 'none'; manifest-src 'self'; worker-src 'self' blob:"
+};
+const PRIVATE = /(^|\/)\.|^\/(README\.md|package(-lock)?\.json|server\.js|tools\/)|\.(bak|old_bak|log|csv|env|md|py|sh|ps1)$/i;
+
 const server = http.createServer((req, res) => {
-  let reqPath = decodeURI(req.url.split('?')[0]);
+  let reqPath;
+  try { reqPath = decodeURI(req.url.split('?')[0]); } catch (e) { res.writeHead(400); return res.end('Bad request'); }
+  for (const [k, v] of Object.entries(SECURITY_HEADERS)) res.setHeader(k, v);
 
   if (reqPath === '/api/contact.php' && req.method === 'POST') return handleContactLocally(req, res);
-  if (reqPath.startsWith('/api/')) { res.writeHead(404, { 'Content-Type': 'text/plain' }); return res.end('404 Not Found'); }
+  if (reqPath.startsWith('/api/') || PRIVATE.test(reqPath) || reqPath.includes('..')) {
+    res.writeHead(404, { 'Content-Type': 'text/html; charset=UTF-8' });
+    return res.end(fs.readFileSync(path.join(PUBLIC_DIR, '404.html')));
+  }
   if (reqPath === '/' || reqPath === '') {
     reqPath = '/index.html';
   }
@@ -74,7 +90,8 @@ const server = http.createServer((req, res) => {
       res.writeHead(404, { 'Content-Type': 'text/plain' });
       return res.end('404 Not Found');
     }
-    filePath = path.join(PUBLIC_DIR, 'index.html');
+    res.writeHead(404, { 'Content-Type': 'text/html; charset=UTF-8' });
+    return res.end(fs.readFileSync(path.join(PUBLIC_DIR, '404.html')));
   }
 
   const ext = path.extname(filePath).toLowerCase();
@@ -121,10 +138,7 @@ const server = http.createServer((req, res) => {
       return res.end('500 Internal Server Error');
     }
 
-    res.writeHead(200, {
-      'Content-Type': contentType,
-      'Access-Control-Allow-Origin': '*'
-    });
+    res.writeHead(200, { 'Content-Type': contentType });
     res.end(content);
   });
 });

@@ -2,14 +2,21 @@
 /**
  * Consummo contact and demo form handler.
  *
- * Receives the Contact Us and Book a Demo forms, checks them, blocks spam,
- * emails the lead to the team, sends the visitor a confirmation and keeps a
- * private CSV copy of every lead.
+ * Receives the Contact Us and Book a Demo forms, checks them, blocks spam and
+ * abuse, emails the lead to the team, sends the visitor a confirmation and keeps
+ * a private CSV copy of every lead.
  *
  * Settings live in api/config.php (not in Git). Copy config.sample.php to
  * config.php on the server and fill it in.
  */
 declare(strict_types=1);
+
+ini_set('display_errors', '0');
+header('X-Content-Type-Options: nosniff');
+header('Cache-Control: no-store');
+header('X-Robots-Tag: noindex');
+
+const MAX_BODY_BYTES = 32768;
 
 $configFile = __DIR__ . '/config.php';
 if (!is_file($configFile)) {
@@ -21,6 +28,19 @@ if (($_SERVER['REQUEST_METHOD'] ?? '') !== 'POST') {
     header('Allow: POST');
     respond(false, 'Method not allowed.', 405);
 }
+if ((int) ($_SERVER['CONTENT_LENGTH'] ?? 0) > MAX_BODY_BYTES) {
+    respond(false, 'Your message is too long.', 413);
+}
+
+// ---------- Same-site check: only accept posts from pages on this website ----------
+$host = strtolower((string) ($_SERVER['HTTP_HOST'] ?? ''));
+$allowedHosts = array_map('strtolower', array_merge([$host], (array) ($cfg['allowed_hosts'] ?? [])));
+$origin = (string) ($_SERVER['HTTP_ORIGIN'] ?? '');
+$referer = (string) ($_SERVER['HTTP_REFERER'] ?? '');
+$sourceHost = strtolower((string) (parse_url($origin !== '' ? $origin : $referer, PHP_URL_HOST) ?? ''));
+if ($sourceHost === '' || !in_array($sourceHost, $allowedHosts, true)) {
+    respond(false, 'This form can only be sent from the Consummo website.', 403);
+}
 
 // ---------- Read and clean input ----------
 function field(string $key, int $max = 200): string
@@ -29,36 +49,45 @@ function field(string $key, int $max = 200): string
     if (is_array($v)) {
         return '';
     }
-    $v = trim(str_replace(["\r\n", "\r"], "\n", (string) $v));
+    $v = trim(str_replace(["\r\n", "\r", "\0"], ["\n", "\n", ''], (string) $v));
     return mb_substr($v, 0, $max);
 }
 function oneLine(string $v): string
 {
-    return trim(preg_replace('/[\r\n\t]+/', ' ', $v) ?? '');
+    return trim(preg_replace('/[\x00-\x1F\x7F]+/u', ' ', $v) ?? '');
 }
+
+$BUSINESSES = [
+    'food-packaged-foods' => 'Food & Packaged Foods', 'beverages' => 'Beverages', 'beauty-personal-care' => 'Beauty & Personal Care',
+    'home-care-hygiene' => 'Home Care & Hygiene', 'baby-family-care' => 'Baby & Family Care', 'pet-care' => 'Pet Care',
+    'grocery-supermarkets' => 'Grocery & Supermarkets', 'department-general-merchandise' => 'Department & General Merchandise',
+    'fashion-apparel' => 'Fashion & Apparel', 'beauty-personal-care-retail' => 'Beauty & Personal Care Retail',
+    'electronics-appliances' => 'Electronics & Appliances', 'pharmacy-healthcare-retail' => 'Pharmacy & Healthcare Retail',
+    'home-lifestyle' => 'Home & Lifestyle', 'convenience-discount-retail' => 'Convenience & Discount Retail',
+    'wholesale-cash-carry' => 'Wholesale & Cash-and-Carry', 'ecommerce-quick-commerce' => 'E-commerce & Quick Commerce', 'other' => 'Other',
+];
+$MODULES = ['Demand Pulse', 'Supply Rhythm', 'Inventory Harmony', 'Price Tempo', 'Nova assistant'];
+$TOPICS = ['Sales and pricing', 'Partnerships', 'Customer support', 'Careers', 'Media', 'Something else'];
 
 $type     = field('form_type', 20) === 'demo' ? 'demo' : 'contact';
 $name     = oneLine(field('name', 100));
 $email    = oneLine(field('email', 150));
 $company  = oneLine(field('company', 120));
 $role     = oneLine(field('role', 100));
-$phone    = oneLine(field('phone', 30));
+$phone    = preg_replace('/[^0-9+()\s-]/', '', oneLine(field('phone', 30))) ?? '';
 $business = oneLine(field('business', 60));
-$size     = oneLine(field('size', 60));
-$revValue = preg_replace('/[^0-9.,]/', '', oneLine(field('revenue_value', 20))) ?? '';
-$revUnit  = in_array(field('revenue_unit', 10), ['Lakhs', 'Crores'], true) ? field('revenue_unit', 10) : '';
-if ($revValue !== '') {
-    $size = "\u{20B9}" . $revValue . ($revUnit !== '' ? ' ' . $revUnit : '');
-}
+$business = array_key_exists($business, $BUSINESSES) ? $business : '';
 $topic    = oneLine(field('topic', 60));
+$topic    = in_array($topic, $TOPICS, true) ? $topic : '';
 $message  = field('message', 2000);
 $waOk     = field('whatsapp_ok', 5) === 'yes';
 $consent  = field('consent', 5) === 'yes';
 $page     = oneLine(field('page', 200));
-$modules  = array_values(array_filter(array_map(
-    fn($m) => oneLine(mb_substr((string) $m, 0, 40)),
-    is_array($_POST['modules'] ?? null) ? $_POST['modules'] : []
-)));
+$page     = preg_match('#^/[A-Za-z0-9/_-]*$#', $page) ? $page : '';
+$modules  = array_values(array_intersect($MODULES, is_array($_POST['modules'] ?? null) ? array_map('strval', $_POST['modules']) : []));
+$revValue = preg_replace('/[^0-9.,]/', '', oneLine(field('revenue_value', 20))) ?? '';
+$revUnit  = in_array(field('revenue_unit', 10), ['Lakhs', 'Crores'], true) ? field('revenue_unit', 10) : '';
+$size     = $revValue !== '' ? "\u{20B9}" . $revValue . ($revUnit !== '' ? ' ' . $revUnit : '') : '';
 
 // ---------- Spam checks (silently accept so bots learn nothing) ----------
 $honeypot = field('website', 200);
@@ -91,45 +120,70 @@ if ($errors) {
     respond(false, implode(' ', $errors), 422);
 }
 
-// ---------- Rate limit: max N submissions per IP per hour ----------
-$dataDir = __DIR__ . '/data';
+// ---------- Abuse limits ----------
+$dataDir = rtrim((string) ($cfg['data_dir'] ?? (__DIR__ . '/data')), '/\\');
 if (!is_dir($dataDir)) {
     @mkdir($dataDir, 0750, true);
 }
-$ip = $_SERVER['HTTP_CF_CONNECTING_IP'] ?? $_SERVER['REMOTE_ADDR'] ?? 'unknown';
-$limit = (int) ($cfg['rate_limit_per_hour'] ?? 5);
-$rlFile = $dataDir . '/ratelimit.json';
-$rl = is_file($rlFile) ? (json_decode((string) file_get_contents($rlFile), true) ?: []) : [];
-$now = time();
-$key = hash('sha256', $ip);
-$rl[$key] = array_values(array_filter($rl[$key] ?? [], fn($t) => $t > $now - 3600));
-if (count($rl[$key]) >= $limit) {
-    respond(false, 'Too many messages from your connection. Please try again later, or message us on WhatsApp.', 429);
+$ip = !empty($cfg['trust_cloudflare']) && !empty($_SERVER['HTTP_CF_CONNECTING_IP'])
+    ? (string) $_SERVER['HTTP_CF_CONNECTING_IP']
+    : (string) ($_SERVER['REMOTE_ADDR'] ?? 'unknown');
+
+$limitsFile = $dataDir . '/limits.json';
+$lf = @fopen($limitsFile, 'c+');
+$limits = [];
+if ($lf) {
+    flock($lf, LOCK_EX);
+    $limits = json_decode((string) stream_get_contents($lf), true) ?: [];
 }
-$rl[$key][] = $now;
-foreach ($rl as $k => $times) {
-    if (!array_filter($times, fn($t) => $t > $now - 3600)) {
-        unset($rl[$k]);
+$now = time();
+$today = date('Y-m-d');
+if (($limits['day'] ?? '') !== $today) {
+    $limits = ['day' => $today, 'total' => 0, 'confirm' => [], 'ip' => $limits['ip'] ?? []];
+}
+$ipKey = hash('sha256', $ip);
+foreach ($limits['ip'] as $k => $times) {
+    $limits['ip'][$k] = array_values(array_filter($times, fn($t) => $t > $now - 3600));
+    if (!$limits['ip'][$k]) {
+        unset($limits['ip'][$k]);
     }
 }
-@file_put_contents($rlFile, json_encode($rl), LOCK_EX);
+$perHour = (int) ($cfg['rate_limit_per_hour'] ?? 5);
+$dailyCap = (int) ($cfg['daily_cap'] ?? 150);
+$blocked = '';
+if (count($limits['ip'][$ipKey] ?? []) >= $perHour) {
+    $blocked = 'Too many messages from your connection. Please try again later, or message us on WhatsApp.';
+} elseif ($limits['total'] >= $dailyCap) {
+    $blocked = 'We are receiving a lot of messages right now. Please try again tomorrow, or message us on WhatsApp.';
+}
+if ($blocked === '') {
+    $limits['ip'][$ipKey][] = $now;
+    $limits['total']++;
+}
+$emailKey = hash('sha256', strtolower($email));
+$allowConfirm = ($limits['confirm'][$emailKey] ?? 0) < 2; // max 2 confirmation emails per address per day
+if ($blocked === '' && $allowConfirm) {
+    $limits['confirm'][$emailKey] = ($limits['confirm'][$emailKey] ?? 0) + 1;
+}
+if ($lf) {
+    ftruncate($lf, 0);
+    rewind($lf);
+    fwrite($lf, (string) json_encode($limits));
+    flock($lf, LOCK_UN);
+    fclose($lf);
+}
+if ($blocked !== '') {
+    respond(false, $blocked, 429);
+}
 
-// ---------- Business label ----------
-$BUSINESSES = [
-    'food-packaged-foods' => 'Food & Packaged Foods', 'beverages' => 'Beverages', 'beauty-personal-care' => 'Beauty & Personal Care',
-    'home-care-hygiene' => 'Home Care & Hygiene', 'baby-family-care' => 'Baby & Family Care', 'pet-care' => 'Pet Care',
-    'grocery-supermarkets' => 'Grocery & Supermarkets', 'department-general-merchandise' => 'Department & General Merchandise',
-    'fashion-apparel' => 'Fashion & Apparel', 'beauty-personal-care-retail' => 'Beauty & Personal Care Retail',
-    'electronics-appliances' => 'Electronics & Appliances', 'pharmacy-healthcare-retail' => 'Pharmacy & Healthcare Retail',
-    'home-lifestyle' => 'Home & Lifestyle', 'convenience-discount-retail' => 'Convenience & Discount Retail',
-    'wholesale-cash-carry' => 'Wholesale & Cash-and-Carry', 'ecommerce-quick-commerce' => 'E-commerce & Quick Commerce', 'other' => 'Other',
-];
-$businessLabel = $BUSINESSES[$business] ?? $business;
+$businessLabel = $BUSINESSES[$business] ?? '';
 
 // ---------- Save a private copy of the lead ----------
+// Values are neutralised so a spreadsheet never treats them as formulas.
+$csvSafe = fn(string $v): string => preg_match('/^[=+\-@\t\r|%]/', $v) ? "'" . $v : $v;
 $received = date('Y-m-d H:i:s T');
-$row = [$received, $type, $name, $email, $company, $role, $phone, $waOk ? 'yes' : 'no', $businessLabel, $size,
-    implode('; ', $modules), $topic, str_replace("\n", ' / ', $message), $page];
+$row = array_map($csvSafe, [$received, $type, $name, $email, $company, $role, $phone, $waOk ? 'yes' : 'no', $businessLabel, $size,
+    implode('; ', $modules), $topic, str_replace("\n", ' / ', $message), $page]);
 $csv = $dataDir . '/leads.csv';
 $isNew = !is_file($csv);
 if ($fh = @fopen($csv, 'ab')) {
@@ -161,7 +215,9 @@ if ($phone !== '') {
     if (strlen($digits) === 10) {
         $digits = '91' . $digits;
     }
-    $waLink = 'https://wa.me/' . $digits;
+    if (strlen($digits) >= 10 && strlen($digits) <= 15) {
+        $waLink = 'https://wa.me/' . $digits;
+    }
 }
 
 $html = '<div style="font-family:Arial,Helvetica,sans-serif;max-width:640px;margin:auto;color:#1e293b">'
@@ -183,8 +239,8 @@ foreach ($rows as $label => $value) {
 
 $sent = sendMail($cfg, (string) $cfg['to_email'], $subject, $html, $text, $email, $name);
 
-// ---------- Confirmation to the visitor ----------
-if ($sent && !empty($cfg['send_confirmation'])) {
+// ---------- Confirmation to the visitor (limited per address, so the form cannot be used to spam people) ----------
+if ($sent && $allowConfirm && !empty($cfg['send_confirmation'])) {
     $first = explode(' ', $name)[0];
     $cSubject = $type === 'demo' ? 'Your Consummo demo request' : 'We received your message';
     $cBody = $type === 'demo'
@@ -198,7 +254,7 @@ if ($sent && !empty($cfg['send_confirmation'])) {
 }
 
 if (!$sent) {
-    error_log('[consummo-contact] email delivery failed for lead from ' . $email);
+    error_log('[consummo-contact] email delivery failed for a lead received at ' . $received);
 }
 // The lead is saved even if email fails, so the visitor still gets a success message.
 respond(true);
@@ -211,11 +267,10 @@ function respond(bool $ok, string $error = '', int $code = 200): void
     http_response_code($ok ? 200 : $code);
     if ($wantsJson) {
         header('Content-Type: application/json; charset=utf-8');
-        header('Cache-Control: no-store');
         echo json_encode($ok ? ['ok' => true] : ['ok' => false, 'error' => $error]);
     } else {
         $back = parse_url($_SERVER['HTTP_REFERER'] ?? '/contact/', PHP_URL_PATH) ?: '/contact/';
-        if (!str_starts_with($back, '/')) {
+        if (!preg_match('#^/[A-Za-z0-9/_-]*$#', $back)) {
             $back = '/contact/';
         }
         header('Location: ' . $back . ($ok ? '?sent=1#form' : '#form'), true, 303);
@@ -225,12 +280,16 @@ function respond(bool $ok, string $error = '', int $code = 200): void
 
 function encodeHeader(string $s): string
 {
+    $s = preg_replace('/[\r\n]+/', ' ', $s) ?? '';
     return preg_match('/[^\x20-\x7E]/', $s) ? '=?UTF-8?B?' . base64_encode($s) . '?=' : $s;
 }
 
 /** Send via SMTP when configured, otherwise PHP mail(). */
 function sendMail(array $cfg, string $to, string $subject, string $html, string $text, string $replyTo = '', string $replyName = ''): bool
 {
+    if (!filter_var($to, FILTER_VALIDATE_EMAIL)) {
+        return false;
+    }
     $from = (string) $cfg['from_email'];
     $fromName = (string) ($cfg['from_name'] ?? 'Consummo');
     $boundary = 'b' . bin2hex(random_bytes(12));
@@ -257,7 +316,8 @@ function smtpSend(array $s, string $from, string $to, string $subject, array $he
 {
     $port = (int) ($s['port'] ?? 465);
     $host = ($port === 465 ? 'ssl://' : 'tcp://') . $s['host'];
-    $fp = @stream_socket_client($host . ':' . $port, $errno, $errstr, 15);
+    $ctx = stream_context_create(['ssl' => ['verify_peer' => true, 'verify_peer_name' => true]]);
+    $fp = @stream_socket_client($host . ':' . $port, $errno, $errstr, 15, STREAM_CLIENT_CONNECT, $ctx);
     if (!$fp) {
         error_log("[consummo-contact] SMTP connect failed: $errstr");
         return false;
@@ -273,17 +333,17 @@ function smtpSend(array $s, string $from, string $to, string $subject, array $he
         }
         return $out;
     };
-    $cmd = function (string $c, array $okCodes) use ($fp, $read): bool {
+    $cmd = function (string $c, array $okCodes, string $label = '') use ($fp, $read): bool {
         fwrite($fp, $c . "\r\n");
         $r = $read();
         $okay = in_array((int) substr($r, 0, 3), $okCodes, true);
         if (!$okay) {
-            error_log('[consummo-contact] SMTP "' . explode(' ', $c)[0] . '" failed: ' . trim($r));
+            error_log('[consummo-contact] SMTP ' . ($label !== '' ? $label : explode(' ', $c)[0]) . ' failed: ' . trim($r));
         }
         return $okay;
     };
     $read();
-    $ehloHost = $_SERVER['SERVER_NAME'] ?? 'localhost';
+    $ehloHost = preg_replace('/[^A-Za-z0-9.-]/', '', (string) ($_SERVER['SERVER_NAME'] ?? 'localhost')) ?: 'localhost';
     if (!$cmd('EHLO ' . $ehloHost, [250])) {
         return false;
     }
@@ -292,12 +352,12 @@ function smtpSend(array $s, string $from, string $to, string $subject, array $he
             return false;
         }
     }
-    $ok = $cmd('AUTH LOGIN', [334]) && $cmd(base64_encode((string) $s['username']), [334]) && $cmd(base64_encode((string) $s['password']), [235])
+    $ok = $cmd('AUTH LOGIN', [334]) && $cmd(base64_encode((string) $s['username']), [334], 'username') && $cmd(base64_encode((string) $s['password']), [235], 'password')
         && $cmd('MAIL FROM:<' . $from . '>', [250]) && $cmd('RCPT TO:<' . $to . '>', [250, 251]) && $cmd('DATA', [354]);
     if ($ok) {
         $msg = 'To: <' . $to . ">\r\nSubject: " . $subject . "\r\nDate: " . date('r') . "\r\nMessage-ID: <" . bin2hex(random_bytes(10)) . '@' . explode('@', $from)[1] . ">\r\n"
             . implode("\r\n", $headers) . "\r\n\r\n" . preg_replace('/^\./m', '..', $body);
-        $ok = $cmd($msg . "\r\n.", [250]);
+        $ok = $cmd($msg . "\r\n.", [250], 'DATA body');
     }
     $cmd('QUIT', [221]);
     fclose($fp);
