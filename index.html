@@ -1100,8 +1100,37 @@
 
 <script>
 // Lifecycle & Interaction Handler for Conzmo
+// On this page some components load after the router's first astro:page-load, so it is
+// fired again below. Components that were already wired then get wired twice, which made
+// toggles (the phone menu button, the video sound button) flip twice per tap and do nothing.
+// These two toggles are therefore handled here once, before any component listener runs.
+document.addEventListener('click', (e) => {
+  const el = e.target instanceof Element ? e.target : null;
+  if (!el) return;
+  const menuBtn = el.closest('.nav__toggle');
+  if (menuBtn) {
+    e.stopPropagation();
+    const open = menuBtn.getAttribute('aria-expanded') !== 'true';
+    const nav = document.querySelector('#mobile-nav');
+    menuBtn.setAttribute('aria-expanded', open ? 'true' : 'false');
+    if (nav) { nav.dataset.open = open ? 'true' : 'false'; nav.setAttribute('aria-hidden', open ? 'false' : 'true'); }
+    document.documentElement.classList.toggle('is-nav-locked', open);
+    return;
+  }
+  const soundBtn = el.closest('[data-hero-sound]');
+  if (soundBtn) {
+    e.stopPropagation();
+    const video = soundBtn.closest('[data-hero-video]')?.querySelector('video');
+    if (!video) return;
+    video.muted = !video.muted;
+    if (!video.muted) video.play().catch(() => {});
+    soundBtn.dataset.muted = String(video.muted);
+    soundBtn.setAttribute('aria-label', video.muted ? 'Unmute video' : 'Mute video');
+    soundBtn.setAttribute('aria-pressed', String(!video.muted));
+  }
+}, true);
 document.addEventListener('DOMContentLoaded', () => {
-  // Trigger astro lifecycle events so built-in carousels, mega menus, sticky cta and drawers initialize
+  // Trigger astro lifecycle events so components that loaded late (hero video, media) initialize
   document.dispatchEvent(new Event('astro:page-load'));
 
   // Wire search toggle buttons
