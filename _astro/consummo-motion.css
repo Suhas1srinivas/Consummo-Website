@@ -97,12 +97,18 @@ header.nav .nav__brand .nav__logo{height:2.75rem}
 }
 
 /* ===== Compact header + desktop scale (site shown at the size of 80% browser zoom) ===== */
-header.nav:not([data-scrolled=true]){padding:.6rem 2rem !important}
-header.nav:not([data-scrolled=true]) .nav__inner{min-height:4.25rem !important;margin-top:.25rem !important;padding:.35rem 1.5rem !important}
-header.nav .nav__brand .nav__logo{height:2.2rem}
-header.nav .nav__list{padding:.25rem}
-header.nav .nav__link{padding:.5rem 1.05rem;font-size:.9rem}
-header.nav .nav__cta--bar{padding:.7rem 1.35rem;font-size:.9rem}
+/* every part of the floating-bar -> full-bar change animates together, so scrolling feels smooth */
+header.nav{transition:background-color .5s ease,border-color .5s ease,box-shadow .5s ease,padding .5s cubic-bezier(.22,1,.36,1) !important}
+header.nav .nav__inner{border:1px solid transparent;transition:min-height .5s cubic-bezier(.22,1,.36,1),margin .5s cubic-bezier(.22,1,.36,1),padding .5s cubic-bezier(.22,1,.36,1),background-color .5s ease,border-color .5s ease,border-radius .5s ease,box-shadow .5s ease !important}
+header.nav .nav__brand .nav__logo{height:2.4rem;transition:height .5s cubic-bezier(.22,1,.36,1)}
+header.nav:not([data-scrolled=true]){padding:.7rem 2.25rem !important}
+header.nav:not([data-scrolled=true]) .nav__inner{min-height:4.75rem !important;margin-top:.3rem !important;padding:.4rem 1.75rem !important}
+header.nav[data-scrolled=true]{box-shadow:0 8px 28px -14px rgba(0,32,103,.22)}
+header.nav[data-scrolled=true] .nav__inner{min-height:4.25rem;margin-top:0;padding:.25rem 1.75rem}
+header.nav[data-scrolled=true] .nav__brand .nav__logo{height:2.25rem}
+header.nav .nav__list{padding:.28rem}
+header.nav .nav__link{padding:.55rem 1.2rem;font-size:.95rem}
+header.nav .nav__cta--bar{padding:.78rem 1.5rem;font-size:.95rem}
 @media (min-width:1100px){
   html{zoom:.8}
   /* zoom also shrinks screen-height units, so scale them back up to fill the screen */
