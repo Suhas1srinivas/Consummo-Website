@@ -45,6 +45,11 @@ $role     = oneLine(field('role', 100));
 $phone    = oneLine(field('phone', 30));
 $business = oneLine(field('business', 60));
 $size     = oneLine(field('size', 60));
+$revValue = preg_replace('/[^0-9.,]/', '', oneLine(field('revenue_value', 20))) ?? '';
+$revUnit  = in_array(field('revenue_unit', 10), ['Lakhs', 'Crores'], true) ? field('revenue_unit', 10) : '';
+if ($revValue !== '') {
+    $size = "\u{20B9}" . $revValue . ($revUnit !== '' ? ' ' . $revUnit : '');
+}
 $topic    = oneLine(field('topic', 60));
 $message  = field('message', 2000);
 $waOk     = field('whatsapp_ok', 5) === 'yes';

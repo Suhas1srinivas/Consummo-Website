@@ -68,6 +68,35 @@ a.ct-opt:hover{transform:translateY(-3px);box-shadow:0 20px 36px -22px rgba(0,32
 .cf__chips input{position:absolute;opacity:0;pointer-events:none}
 .cf__chips label:has(input:checked){border-color:var(--color-brand-blue);background:#e8f1ff;color:var(--color-brand-blue)}
 .cf__chips label:has(input:focus-visible){box-shadow:0 0 0 4px rgba(0,124,244,.2)}
+.cf__rev{display:flex;align-items:stretch;border-radius:.75rem;border:1.5px solid #dbe3ef;background:#f8fafc;transition:border-color .2s,box-shadow .2s,background .2s}
+.cf__rev:focus-within{border-color:var(--color-brand-blue);background:#fff;box-shadow:0 0 0 4px rgba(0,124,244,.14)}
+.cf__rev-cur{display:grid;place-items:center;padding:0 .2rem 0 .95rem;font-weight:700;color:var(--color-brand)}
+.cf .cf__rev input[type=text]{flex:1;min-width:0;border:0;background:transparent;box-shadow:none;padding-left:.35rem}
+.cf .cf__rev input[type=text]:focus{box-shadow:none}
+.cf__seg{display:flex;gap:.25rem;margin:.3rem;padding:.2rem;border-radius:.6rem;background:#e9eef6}
+.cf__seg label{position:relative;display:grid;place-items:center;padding:.35rem .8rem;border-radius:.45rem;font-size:.8125rem;font-weight:700;color:#64748b;cursor:pointer;transition:all .2s}
+.cf__seg input{position:absolute;opacity:0;pointer-events:none}
+.cf__seg label:has(input:checked){background:#fff;color:var(--color-brand-blue);box-shadow:0 2px 6px rgba(0,32,103,.12)}
+.cf__seg label:has(input:focus-visible){box-shadow:0 0 0 3px rgba(0,124,244,.25)}
+.dm-sub{margin:1.75rem 0 .9rem;font-size:.75rem;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:#64748b}
+.dm-mods{display:grid;grid-template-columns:1fr 1fr;gap:.75rem}
+.dm-mod{position:relative;overflow:hidden;padding:1.1rem 1.1rem 1.15rem;border-radius:1.15rem;background:#fff;border:1px solid var(--color-border);box-shadow:0 14px 30px -24px rgba(0,32,103,.45);transition:transform .35s cubic-bezier(.2,.8,.2,1),box-shadow .35s}
+.dm-mod:hover{transform:translateY(-3px);box-shadow:0 22px 40px -24px rgba(0,32,103,.5)}
+.dm-mod::after{content:"";position:absolute;right:-30%;top:-40%;width:70%;aspect-ratio:1;border-radius:50%;background:radial-gradient(circle,color-mix(in srgb,var(--m) 16%,transparent),transparent 70%)}
+.dm-mod__ic{position:relative;z-index:1;width:2.4rem;height:2.4rem;display:grid;place-items:center;margin-bottom:.7rem;border-radius:.75rem;color:#fff;background:var(--m);box-shadow:0 10px 18px -10px var(--m)}
+.dm-mod__ic svg{width:1.2rem;height:1.2rem}
+.dm-mod strong{position:relative;z-index:1;display:block;font-size:.98rem;color:var(--color-brand)}
+.dm-mod p{position:relative;z-index:1;margin:.2rem 0 0;font-size:.8125rem;line-height:1.45;color:var(--color-body)}
+.dm-nova{display:flex;align-items:center;gap:1rem;margin-top:.75rem;padding:1rem 1.15rem;border-radius:1.15rem;color:#fff;background:linear-gradient(135deg,#021440,#002067 55%,#2a2f9e);box-shadow:0 18px 36px -22px rgba(0,32,103,.8)}
+.dm-nova__ic{flex:none;width:2.6rem;height:2.6rem;display:grid;place-items:center;border-radius:50%;background:linear-gradient(135deg,var(--color-cyan),var(--color-accent-purple));box-shadow:0 0 0 4px rgba(255,255,255,.12)}
+.dm-nova__ic svg{width:1.3rem;height:1.3rem}
+.dm-nova strong{display:block;font-size:.98rem}
+.dm-nova span{display:block;font-size:.8125rem;color:#bfdbfe}
+.dm-for{display:flex;flex-wrap:wrap;align-items:center;gap:.45rem;margin-top:1.4rem}
+.dm-for b{margin-right:.25rem;font-size:.75rem;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:#64748b}
+.dm-for span{padding:.35rem .75rem;border-radius:999px;background:#fff;border:1px solid var(--color-border);font-size:.8125rem;font-weight:600;color:var(--color-brand)}
+.dm-for span.more{color:var(--color-brand-blue);border-color:color-mix(in srgb,var(--color-brand-blue) 30%,transparent);background:#eef5ff}
+@media (max-width:480px){.dm-mods{grid-template-columns:1fr}}
 .cf__check{grid-column:1/-1;display:flex;align-items:flex-start;gap:.6rem;font-size:.8125rem!important;font-weight:500!important;color:var(--color-body)!important;line-height:1.45}
 .cf__check input{margin-top:.15rem;width:1.05rem;height:1.05rem;accent-color:var(--color-brand-blue);flex:none}
 .cf__check a{color:var(--color-brand-blue);font-weight:600}
